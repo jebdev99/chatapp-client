@@ -2,9 +2,12 @@ import { Box, Button, TextField, Typography } from "@mui/material"
 import React, { Suspense, useState } from "react"
 import { RegistrationInterface } from "../../types/auth/registration"
 import { registrationHandler } from "../../handlers/auth/registration"
-import { useNavigate } from "react-router-dom"
+// import { useNavigate } from "react-router-dom"
+import { useCookies } from "react-cookie"
+import { jwtDecode } from "jwt-decode"
 const AuthRegistration = () => {
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
+    const [, setCookie] = useCookies();
     const [loading, setLoading] = useState<boolean>(false)
     const [registrationData, setRegistrationData] = useState<RegistrationInterface>({fullName: '', email: '', password: ''})
     const changeHandler = (e:React.ChangeEvent<HTMLInputElement>):void => {
@@ -23,11 +26,10 @@ const AuthRegistration = () => {
             const { data, status } = await registrationHandler(formData);
             if(status) {
                 setLoading(false)
-                console.log(status, data);
-                alert(data.message)
-                if(data.message === 'Registered') {
-                    navigate('/chat')
-                }
+                const {token} = data;
+                const { exp }: {signId: string, iat: number, exp: number} = jwtDecode(token);
+                const expirationDate = new Date(exp * 1000);
+                setCookie("token", token, {path: '/', expires: expirationDate});
             }
         }
     }

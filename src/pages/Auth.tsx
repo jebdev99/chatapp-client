@@ -1,17 +1,27 @@
 import { Box, Button, ButtonGroup } from "@mui/material"
-import React, { Suspense, useState } from "react"
+import React, { Suspense, useEffect, useState } from "react"
 import AuthLogin from "../components/auth/AuthLogin"
 import AuthRegistration from "../components/auth/AuthRegistration"
+import { useCookies } from "react-cookie"
+import { checkToken } from "../utils/auth"
+import { useNavigate } from "react-router-dom"
 // import { GoogleLogin, useGoogleLogin } from "@react-oauth/google"
 // import { toast } from "../utils/toast"
 
 export const Component = () => {
+    const [cookies,] = useCookies(["token"])
     const [toggle, setToggle] = useState({
         login: true,
         registration: false,
     })
+    const navigate = useNavigate()
     const showLogin = () => setToggle((prevState) => ({...prevState, login: true, registration: false}))
     const showRegistration = () => setToggle((prevState) => ({...prevState, registration: true, login: false}))
+    useEffect(() => {
+        if(checkToken(cookies.token)) {
+            navigate(`/c/${cookies.token}`)
+        }        
+    }, [cookies, navigate])
     return(
         <Suspense fallback={<div>Loading...</div>}>
             <Box

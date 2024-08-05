@@ -2,7 +2,10 @@ import { Box, Button, TextField, Typography } from "@mui/material"
 import { LoginInterface } from "../../types/auth/login"
 import React, { Suspense, useState } from "react"
 import { loginHandler } from "../../handlers/auth/login"
+import { useCookies } from "react-cookie"
+import { jwtDecode } from "jwt-decode"
 const AuthLogin = () => {
+    const [, setCookie] = useCookies();
     const [loading, setLoading] = useState<boolean>(false)
     const [loginData, setLoginData] = useState<LoginInterface>({ email: '', password: '' })
     const changeHandler = (e:React.ChangeEvent<HTMLInputElement>):void => {
@@ -10,14 +13,26 @@ const AuthLogin = () => {
     }
     const submitHandler = async (e:React.FormEvent):Promise<void> => {
         e.preventDefault();
-        const countBlankFields= Object.values(loginData).filter((value) => value.trim().length < 1)  
+        const countBlankFields= Object.values(loginData).filter((value) => value.trim().length < 1);
         if(!(countBlankFields.length > 0)) {
             setLoading(true);
-            const response = await loginHandler(loginData.email, loginData.password);
-            console.log(response);
-            // const { message, status, token } = response;
+            const formData = new FormData();
+            formData.append('email', loginData.email);
+            formData.append('password', loginData.password);
+            const { data, status } = await loginHandler(formData);
+            const { message, token } = data;
+            alert(message)
+            console.log(status);
+            setTimeout(() => {
+                const { exp }: {signId: string, iat: number, exp: number} = jwtDecode(token);
+                const expirationDate = new Date(exp * 1000);
+                setCookie("token", token, {path: '/', expires: expirationDate});
+                setLoading(false);
+                setLoginData((prevState) => ({...prevState, password: '' }))
+            },500)
         }
     }
+    
     const checkData = Object.values(loginData).map(data => data).filter(data => data === '');
     const disableButton = checkData.length > 0 || loading;
     return (

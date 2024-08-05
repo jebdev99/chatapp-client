@@ -1,11 +1,16 @@
 import { Box, Button, TextField, Typography } from "@mui/material";
 import { Send as SendIcon } from "@mui/icons-material";
-import React, { useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { Input } from "../types/chat"
 import { messageSentAt } from "../utils/formatDate";
+import { checkToken } from "../utils/auth";
+import { useNavigate } from "react-router-dom";
+import { useCookies } from "react-cookie";
+import CircularLoading from "../components/CircularLoading";
 
 export const Component = () => {
-
+    const [cookies, ] = useCookies(['token'])
+    const navigate = useNavigate();
     const [message, setMessage] = useState<Input>({message: '', sentDate: ''});
     const [displayMessage, setDisplayMessage] = useState<string[]>([]);
     const handleChangeMessage = (e: React.ChangeEvent<HTMLInputElement>):void => setMessage({message: e.target.value, sentDate: messageSentAt()});
@@ -14,7 +19,14 @@ export const Component = () => {
         setDisplayMessage([...displayMessage, message.message]); 
         setMessage({message: '', sentDate: ''});
     }
+    useEffect(() => {
+        if(!checkToken(cookies.token)) {
+            navigate('/')
+        }
+    }, [cookies, navigate])
     return (
+        <Suspense fallback={<CircularLoading />}>
+
             <Box
                 component="form"
                 onSubmit={handleSend}
@@ -64,6 +76,7 @@ export const Component = () => {
                     <Button variant="contained" endIcon={<SendIcon />} type="submit" fullWidth>Send</Button>
                 </Box>
             </Box>
+        </Suspense>
     )
 
 }

@@ -1,5 +1,5 @@
 import axios from "axios"
-const VITE_API_URL = "http://localhost:3001"
+import { VITE_API_URL } from "../../utils/envVariables"
 export const registrationHandler = async (formData:FormData) => {
     const { data, status } = await axios.post(`${VITE_API_URL}/auth/register`, 
         formData, 

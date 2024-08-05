@@ -25,14 +25,14 @@ const router = createBrowserRouter([
         // path: "login",
         index: true,
         async lazy() {
-          const { Component } = await import("./pages/Login.tsx");
+          const { Component } = await import("./pages/Auth.tsx");
           return {
             Component,
           }
         },
       },
       {
-        path: "chat",
+        path: "c/:token",
         async lazy() {
           const { Component } = await import("./pages/Chat.tsx");
           return {
